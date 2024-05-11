@@ -2,7 +2,6 @@ package user
 
 import (
 	"errors"
-	"time"
 )
 
 const UserCreatedEventName string = "UserCreatedEvent"
@@ -27,16 +26,4 @@ func (c *UserCreatedEvent) EventId() string {
 
 func (c *UserCreatedEvent) Data() interface{} {
 	return c.data
-}
-
-func (c *UserCreatedEvent) Id() string {
-	return c.data.Id()
-}
-
-func (c *UserCreatedEvent) Name() string {
-	return c.data.Name()
-}
-
-func (c *UserCreatedEvent) Birthdate() time.Time {
-	return c.data.Birthdate()
 }

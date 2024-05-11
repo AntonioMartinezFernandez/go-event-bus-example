@@ -1,5 +1,7 @@
 package event_bus
 
+import "fmt"
+
 type EventBus struct {
 	subscribers map[string][]chan interface{}
 }
@@ -10,7 +12,17 @@ func NewEventBus() *EventBus {
 	}
 }
 
-func (b *EventBus) Subscribe(topic string, ch chan interface{}) {
+func (b *EventBus) Subscribe(topic string, handler EventHandler) {
+	ch := make(chan interface{})
+	go func() {
+		for msg := range ch {
+			err := handler.Handle(msg)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+	}()
+
 	if _, exists := b.subscribers[topic]; !exists {
 		b.subscribers[topic] = make([]chan interface{}, 0)
 	}
@@ -45,4 +57,8 @@ func (b *EventBus) Publish(event Event) {
 type Event interface {
 	EventId() string
 	Data() interface{}
+}
+
+type EventHandler interface {
+	Handle(eventData interface{}) error
 }

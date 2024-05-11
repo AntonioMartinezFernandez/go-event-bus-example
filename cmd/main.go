@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	user "github.com/AntonioMartinezFernandez/go-event-bus-example/internal/user"
@@ -12,46 +11,47 @@ func main() {
 	// Create a new bus
 	bus := event_bus.NewEventBus()
 
-	// Create channel for subscribing to topics
-	createdUserChan := make(chan interface{})
-	anotherCreatedUserChan := make(chan interface{})
-
 	// Subscribe both channels to a topic
-	bus.Subscribe(user.UserCreatedEventName, createdUserChan)
-	bus.Subscribe(user.UserCreatedEventName, anotherCreatedUserChan)
+	bus.Subscribe(user.UserCreatedEventName, user.NewPrintUserOnUserCreated())
+	bus.Subscribe(user.UserCreatedEventName, user.NewSendEmailToUserOnUserCreated())
 
-	// Handler
-	handler := user.NewPrintUserWhenCreated()
-
-	// Run a goroutine to listen for events on the user channel
-	go func() {
-		for msg := range createdUserChan {
-			err := handler.Handle(msg)
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
-	}()
-
-	// Run a goroutine to listen for events on the user channel
-	go func() {
-		for msg := range anotherCreatedUserChan {
-			err := handler.Handle(msg)
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
-	}()
-
-	// Create an event
-	mick := user.NewUser("1", "Mick", time.Now())
-	ev, err := user.NewUserCreatedEvent(mick)
-	if err != nil {
+	// Create events
+	user1 := user.NewUser("1", "Amy", time.Now())
+	ev1, err1 := user.NewUserCreatedEvent(user1)
+	if err1 != nil {
 		panic("error creating user created event")
 	}
 
-	// Publish an event
-	bus.Publish(ev)
+	user2 := user.NewUser("2", "Louis", time.Now())
+	ev2, err2 := user.NewUserCreatedEvent(user2)
+	if err2 != nil {
+		panic("error creating user created event")
+	}
 
-	<-time.After(2000 * time.Millisecond)
+	user3 := user.NewUser("3", "Nina", time.Now())
+	ev3, err3 := user.NewUserCreatedEvent(user3)
+	if err3 != nil {
+		panic("error creating user created event")
+	}
+
+	user4 := user.NewUser("4", "Miles", time.Now())
+	ev4, err4 := user.NewUserCreatedEvent(user4)
+	if err4 != nil {
+		panic("error creating user created event")
+	}
+
+	user5 := user.NewUser("5", "Duke", time.Now())
+	ev5, err5 := user.NewUserCreatedEvent(user5)
+	if err5 != nil {
+		panic("error creating user created event")
+	}
+
+	// Publish events
+	bus.Publish(ev1)
+	bus.Publish(ev2)
+	bus.Publish(ev3)
+	bus.Publish(ev4)
+	bus.Publish(ev5)
+
+	<-time.After(500 * time.Millisecond)
 }
