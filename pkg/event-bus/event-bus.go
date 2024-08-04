@@ -3,17 +3,17 @@ package event_bus
 import "fmt"
 
 type EventBus struct {
-	subscribers map[string][]chan interface{}
+	subscribers map[string][]chan Event
 }
 
 func NewEventBus() *EventBus {
 	return &EventBus{
-		subscribers: make(map[string][]chan interface{}),
+		subscribers: make(map[string][]chan Event),
 	}
 }
 
 func (b *EventBus) Subscribe(topic string, handler EventHandler) {
-	ch := make(chan interface{})
+	ch := make(chan Event)
 	go func() {
 		for msg := range ch {
 			err := handler.Handle(msg)
@@ -24,13 +24,13 @@ func (b *EventBus) Subscribe(topic string, handler EventHandler) {
 	}()
 
 	if _, exists := b.subscribers[topic]; !exists {
-		b.subscribers[topic] = make([]chan interface{}, 0)
+		b.subscribers[topic] = make([]chan Event, 0)
 	}
 
 	b.subscribers[topic] = append(b.subscribers[topic], ch)
 }
 
-func (b *EventBus) Unsubscribe(topic string, ch chan interface{}) {
+func (b *EventBus) Unsubscribe(topic string, ch chan Event) {
 	if _, exists := b.subscribers[topic]; !exists {
 		return
 	}
@@ -45,20 +45,21 @@ func (b *EventBus) Unsubscribe(topic string, ch chan interface{}) {
 }
 
 func (b *EventBus) Publish(event Event) {
-	if _, exists := b.subscribers[event.EventId()]; !exists {
+	if _, exists := b.subscribers[event.Name()]; !exists {
 		return
 	}
 
-	for _, ch := range b.subscribers[event.EventId()] {
-		ch <- event.Data()
+	for _, ch := range b.subscribers[event.Name()] {
+		ch <- event
 	}
 }
 
 type Event interface {
-	EventId() string
-	Data() interface{}
+	Name() string
+	Id() string
+	Data() map[string]interface{}
 }
 
 type EventHandler interface {
-	Handle(eventData interface{}) error
+	Handle(event Event) error
 }
